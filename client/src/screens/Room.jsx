@@ -1,25 +1,29 @@
-import { useCallback, useEffect } from "react";
-import { useSocket } from "../context/SocketProvider"
+import { useCallback, useEffect, useState } from "react";
+import { useSocket } from "../context/SocketProvider";
 
 const Room = () => {
+  const socket = useSocket();
+  const [remoteSocketId, setRemoteSocketId] = useState(null);
 
-    const socket = useSocket();
+  const userJoined = useCallback(({ email, id }) => {
+    console.log("user connected ", email, id);
+    setRemoteSocketId(id);
+  }, []);
 
-    const userJoined = useCallback(({email , id}) => {
-        console.log(email , id);
-    }, [])
+  useEffect(() => {
+    socket.on("user:joined", userJoined);
 
-    useEffect(() => {
-        socket.on("user:joined", userJoined)
-
-        return () => {
-            socket.off("user:joined", userJoined)
-        }
-    } , [socket,userJoined])
+    return () => {
+      socket.off("user:joined", userJoined);
+    };
+  }, [socket, userJoined]);
 
   return (
-    <div><h1>Room</h1></div>
-  )
-}
+    <div>
+      <h1>Room</h1>
+      <h4>{remoteSocketId ? "connected": 'No Connection'}</h4>
+    </div>
+  );
+};
 
-export default Room
+export default Room;
