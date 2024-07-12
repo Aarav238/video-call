@@ -17,18 +17,28 @@ const Room = () => {
       video: true,
     });
 
-    
+    const offer = await peer.getOffer();
+    socket.emit("user:call", {to: remoteSocketId , offer})
 
     setStream(stream);
-  }, []);
+  }, [remoteSocketId, socket]);
+
+  const handleIncomingCall = useCallback(
+    async ({ from, offer }) => {
+      console.log(`Incoming Call`, from, offer);
+    },
+    []
+  );
+
 
   useEffect(() => {
     socket.on("user:joined", userJoined);
-
+    socket.on("incoming:call", handleIncomingCall)
     return () => {
       socket.off("user:joined", userJoined);
+      socket.off("incoming:call",handleIncomingCall)
     };
-  }, [socket, userJoined]);
+  }, [ socket, userJoined, handleIncomingCall,]);
 
   return (
     <div>
